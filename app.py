@@ -8,7 +8,7 @@ import random
 import os
 
 # --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon="🧠")
+st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon=":)")
 
 # --- 🎬 HAREKETLİ ARKA PLAN FONKSİYONU ---
 def hareketli_arkaplan_ekle():
@@ -325,3 +325,4 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
                 file_name=f"Raven_Rapor_{ad_soyad.replace(' ', '_')}.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
+
