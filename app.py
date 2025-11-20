@@ -38,7 +38,10 @@ def hareketli_arkaplan_ekle():
     for _ in range(15): # 15 adet yüzen görsel
         img_src = random.choice(images_b64)
         left_pos = random.randint(0, 90)
-        size = random.randint(50, 100) # Biraz daha küçülttüm (50-100px)
+        # --- BOYUT DEĞİŞİKLİĞİ BURADA YAPILDI ---
+        # Eski boyut: random.randint(50, 100)
+        # Yeni boyut (%50 daha büyük): 75px ile 150px arası rastgele
+        size = random.randint(75, 150) 
         duration = random.randint(15, 30)
         delay = random.randint(-20, 0)
         opacity = random.uniform(0.2, 0.6) # Biraz daha şeffaf
@@ -68,7 +71,7 @@ def hareketli_arkaplan_ekle():
 
 .floating-item {{
     position: absolute;
-    bottom: -150px;
+    bottom: -200px; /* Başlangıç noktasını biraz daha aşağı çektim ki büyük resimler aniden belirmesin */
     background-size: cover;
     background-position: center;
     border-radius: 50%; /* Tam yuvarlak yaptım, daha estetik durur */
@@ -78,7 +81,7 @@ def hareketli_arkaplan_ekle():
 
 @keyframes floatUp {{
     0% {{ transform: translateY(0) rotate(0deg); }}
-    100% {{ transform: translateY(-120vh) rotate(360deg); }}
+    100% {{ transform: translateY(-130vh) rotate(360deg); }} /* Bitiş noktasını biraz daha yukarı çektim */
 }}
 
 /* FORM ALANI TASARIMI (SADELEŞTİRİLMİŞ) */
