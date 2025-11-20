@@ -10,89 +10,84 @@ import os
 # --- SAYFA AYARLARI ---
 st.set_page_config(page_title="Raven Test Analizi", layout="centered")
 
-# --- 🎬 HAREKETLİ ARKA PLAN FONKSİYONU (AKILLI VERSİYON) ---
+# --- 🎬 HAREKETLİ ARKA PLAN FONKSİYONU ---
 def hareketli_arkaplan_ekle():
     images_b64 = []
-    bulunan_sayisi = 0
     
-    # 1'den 7'ye kadar tüm resim numaralarını kontrol et
+    # GitHub'daki dosya isimlerin tam olarak: 1.jpeg, 2.jpeg ... 7.jpeg
+    # Bu yüzden doğrudan bu isimleri aratıyoruz.
     for i in range(1, 8):
-        # Olası tüm uzantıları dene
-        olasi_isimler = [f"{i}.jpeg", f"{i}.jpg", f"{i}.png", f"{i}.JPG", f"{i}.JPEG", f"{i}.PNG"]
-        
-        dosya_bulundu = False
-        for filename in olasi_isimler:
-            if os.path.exists(filename):
-                try:
-                    with open(filename, "rb") as image_file:
-                        encoded = base64.b64encode(image_file.read()).decode()
-                        # Dosya uzantısını al (mime type için)
-                        ext = filename.split('.')[-1].lower()
-                        # jpg ise jpeg yap (tarayıcı uyumu için)
-                        if ext == 'jpg': ext = 'jpeg'
-                        
-                        images_b64.append(f"data:image/{ext};base64,{encoded}")
-                        bulunan_sayisi += 1
-                        dosya_bulundu = True
-                        break # Doğru uzantıyı bulduk, diğerlerini deneme
-                except Exception as e:
-                    st.error(f"Hata: {filename} okunurken sorun oluştu: {e}")
-        
-        # Debug (Hata Ayıklama) - Eğer resim bulunamazsa ekrana yazma (İsteğe bağlı)
-        # if not dosya_bulundu:
-        #     print(f"{i} numaralı resim bulunamadı.")
-
+        filename = f"{i}.jpeg" 
+        if os.path.exists(filename):
+            try:
+                with open(filename, "rb") as image_file:
+                    encoded = base64.b64encode(image_file.read()).decode()
+                    images_b64.append(f"data:image/jpeg;base64,{encoded}")
+            except Exception as e:
+                st.error(f"Resim okunurken hata: {e}")
+    
+    # Eğer resimler yüklenmezse uyarı ver (Hata ayıklama için)
     if not images_b64:
-        st.warning("⚠️ Arka plan resimleri yüklenemedi. Lütfen GitHub'da '1.jpg', '2.jpg'... gibi dosyaların yüklü olduğundan emin olun.")
+        st.warning(f"⚠️ Arka plan resimleri (1.jpeg - 7.jpeg) bulunamadı. Şu anki klasördeki dosyalar: {os.listdir()}")
         return
 
     # Görselleri Karıştır
     random.shuffle(images_b64)
 
-    # CSS Oluştur
+    # CSS Animasyonu İçin HTML Oluştur
     css_images = ""
     for img in images_b64:
+        # Her resim ekran boyutunda (100vh) olacak
         css_images += f'<div style="background-image: url({img}); width: 100%; height: 100vh; background-size: cover; background-position: center;"></div>'
 
     total_height = len(images_b64) * 100 
-    duration = len(images_b64) * 12 # Biraz daha yavaşlattım (12 sn)
+    duration = len(images_b64) * 10 # Hız ayarı (saniye)
 
     st.markdown(
         f"""
         <style>
-        .stApp::before {{
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: {total_height}vh;
-            z-index: -1;
-            animation: slide {duration}s linear infinite;
+        /* 1. ANA GÖVDEYİ ŞEFFAFLAŞTIR (En Önemli Kısım) */
+        .stApp {{
+            background-color: transparent !important;
         }}
+        [data-testid="stAppViewContainer"] {{
+            background-color: transparent !important;
+        }}
+        [data-testid="stHeader"] {{
+            background-color: rgba(0,0,0,0) !important; /* Üst barı da şeffaf yap */
+        }}
+
+        /* 2. ARKA PLAN ANİMASYON KATMANI */
         .bg-scroller {{
-            position: fixed; top: 0; left: 0; width: 100%; height: {total_height}vh;
-            z-index: -1;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: {total_height}vh;
+            z-index: -9999; /* En arkaya at */
             animation: slide {duration}s linear infinite;
         }}
+
         @keyframes slide {{
-            0% {{ transform: translateY(-{total_height - 100}vh); }}
-            100% {{ transform: translateY(0); }}
+            0% {{ transform: translateY(0); }}
+            100% {{ transform: translateY(-{total_height - 100}vh); }}
         }}
         
-        /* Kutucuk Tasarımları (Daha Okunabilir) */
+        /* 3. KUTUCUK VE YAZI TASARIMLARI (Okunabilirlik İçin) */
         .stTextInput, .stNumberInput, .stDateInput {{
             background-color: rgba(255, 255, 255, 0.95) !important;
             border-radius: 10px;
             padding: 5px;
             border: 1px solid #ddd;
         }}
-        /* Başlık ve Yazıların Arkası */
+        
         h1, h2, h3, p {{
-            background-color: rgba(255, 255, 255, 0.85);
+            background-color: rgba(255, 255, 255, 0.90); /* Yazı arkası beyaz */
             padding: 15px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            backdrop-filter: blur(5px);
         }}
-        /* Buton Tasarımı */
+        
         .stButton>button {{
             background-color: #FF4B4B;
             color: white;
@@ -100,9 +95,13 @@ def hareketli_arkaplan_ekle():
             border-radius: 8px;
             padding: 15px;
             font-size: 18px;
+            border: none;
         }}
         </style>
-        <div class="bg-scroller">{css_images}</div>
+        
+        <div class="bg-scroller">
+            {css_images}
+        </div>
         """,
         unsafe_allow_html=True
     )
@@ -110,7 +109,7 @@ def hareketli_arkaplan_ekle():
 hareketli_arkaplan_ekle()
 
 # --------------------------------------------------------
-# --- HESAPLAMA MOTORU (AYNI KALDI) ---
+# --- HESAPLAMA MOTORU ---
 
 st.title("Raven Testi: Otomatik Analiz ve Raporlama")
 st.markdown("Bu araç, girilen verileri uluslararası normlarla (Çocuk & Yetişkin) karşılaştırarak otomatik Word raporu oluşturur.")
