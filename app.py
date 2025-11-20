@@ -10,11 +10,11 @@ import os
 # --- SAYFA AYARLARI ---
 st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon="🧠")
 
-# --- 🎨 TASARIM VE ANİMASYON FONKSİYONU ---
-def modern_tasarim_uygula():
+# --- 🎬 HAREKETLİ ARKA PLAN FONKSİYONU ---
+def hareketli_arkaplan_ekle():
     images_b64 = []
     
-    # Resimleri Yükle
+    # 1.jpeg - 7.jpeg dosyalarını ara
     for i in range(1, 8):
         # Olası uzantıları kontrol et
         for ext in ["jpeg", "jpg", "png", "JPG"]:
@@ -23,158 +23,119 @@ def modern_tasarim_uygula():
                 try:
                     with open(filename, "rb") as image_file:
                         encoded = base64.b64encode(image_file.read()).decode()
-                        # CSS için veri formatı
                         mime = "jpeg" if ext.lower() in ["jpg", "jpeg"] else "png"
                         images_b64.append(f"data:image/{mime};base64,{encoded}")
-                    break # Dosyayı bulduysa diğer uzantıya bakma
+                    break 
                 except:
                     pass
 
-    # Görsellerden "Yüzen Parçacıklar" HTML'i oluştur
+    # Eğer resim yoksa veya yüklenemediyse çık
+    if not images_b64:
+        return
+
+    # CSS İÇİN HTML OLUŞTURMA (GİRİNTİSİZ)
     floating_items = ""
-    if images_b64:
-        for _ in range(15): # Ekranda toplam 15 tane görsel dönsün (kopyalarıyla)
-            img_src = random.choice(images_b64)
-            left_pos = random.randint(0, 90)       # Soldan %0 ile %90 arası rastgele konum
-            size = random.randint(60, 120)         # 60px ile 120px arası rastgele boyut
-            duration = random.randint(15, 35)      # 15 ile 35 saniye arası rastgele hız
-            delay = random.randint(-20, 0)         # Animasyon hemen başlamış gibi görünsün
-            opacity = random.uniform(0.3, 0.7)     # Hafif şeffaflık
+    for _ in range(15): # 15 adet yüzen görsel
+        img_src = random.choice(images_b64)
+        left_pos = random.randint(0, 90)
+        size = random.randint(50, 100) # Biraz daha küçülttüm (50-100px)
+        duration = random.randint(15, 30)
+        delay = random.randint(-20, 0)
+        opacity = random.uniform(0.2, 0.6) # Biraz daha şeffaf
 
-            floating_items += f"""
-            <div class="floating-item" style="
-                left: {left_pos}%;
-                width: {size}px;
-                height: {size}px;
-                background-image: url({img_src});
-                animation-duration: {duration}s;
-                animation-delay: {delay}s;
-                opacity: {opacity};
-            "></div>
-            """
+        # HTML String'i (Tek satırda birleştirildi hatayı önlemek için)
+        floating_items += f"""<div class="floating-item" style="left: {left_pos}%; width: {size}px; height: {size}px; background-image: url({img_src}); animation-duration: {duration}s; animation-delay: {delay}s; opacity: {opacity};"></div>"""
 
-    st.markdown(
-        f"""
-        <style>
-        /* 1. ANA FONT VE ARKA PLAN */
-        .stApp {{
-            background-color: #ffffff; /* Beyaz Fon */
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        }}
-        
-        /* 2. YÜZEN GÖRSELLER ANİMASYONU (CSS) */
-        .floating-container {{
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            overflow: hidden;
-            z-index: 0; /* En arkada */
-            pointer-events: none; /* Tıklamayı engelleme */
-        }}
-        
-        .floating-item {{
-            position: absolute;
-            bottom: -150px; /* Ekranın altından başla */
-            background-size: cover;
-            background-position: center;
-            border-radius: 15px; /* Hafif yuvarlak köşeler */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            animation: floatUp linear infinite;
-        }}
+    # CSS VE HTML KODU (Python Girintisinden Bağımsız)
+    page_bg_img = f"""
+<style>
+/* ANA KAPLAYICI */
+.stApp {{
+    background-color: #ffffff;
+}}
 
-        @keyframes floatUp {{
-            0% {{ transform: translateY(0) rotate(0deg); }}
-            100% {{ transform: translateY(-120vh) rotate(360deg); }} /* Yukarı git ve dön */
-        }}
+/* YÜZEN GÖRSELLER KONTEYNERİ */
+.floating-container {{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}}
 
-        /* 3. FORM ELEMANLARINI SADELEŞTİRME (Minimalist) */
-        
-        /* İçerik kutusu ana container */
-        .block-container {{
-            background-color: rgba(255, 255, 255, 0.90); /* Yarı saydam beyaz */
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); /* Çok hafif gölge */
-            z-index: 1; /* Resimlerin üstünde */
-            margin-top: 50px;
-        }}
+.floating-item {{
+    position: absolute;
+    bottom: -150px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%; /* Tam yuvarlak yaptım, daha estetik durur */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    animation: floatUp linear infinite;
+}}
 
-        /* Başlıklar */
-        h1 {{
-            color: #2c3e50;
-            font-weight: 700;
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f0f2f6;
-            margin-bottom: 30px;
-        }}
-        
-        h2, h3 {{
-            color: #34495e;
-        }}
+@keyframes floatUp {{
+    0% {{ transform: translateY(0) rotate(0deg); }}
+    100% {{ transform: translateY(-120vh) rotate(360deg); }}
+}}
 
-        /* Input Kutuları (Text, Number, Date) */
-        .stTextInput input, .stNumberInput input, .stDateInput input {{
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 10px;
-            color: #495057;
-            transition: all 0.3s;
-        }}
-        
-        /* Kutucuklara tıklayınca */
-        .stTextInput input:focus, .stNumberInput input:focus {{
-            border-color: #FF4B4B;
-            box-shadow: none;
-            background-color: #fff;
-        }}
+/* FORM ALANI TASARIMI (SADELEŞTİRİLMİŞ) */
+.block-container {{
+    position: relative;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.92); /* Daha opak beyaz */
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    margin-top: 20px;
+}}
 
-        /* Etiketler (Label) */
-        label {{
-            color: #6c757d !important;
-            font-size: 14px !important;
-            font-weight: 500 !important;
-        }}
+h1 {{
+    color: #333;
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 10px;
+}}
 
-        /* Buton Tasarımı */
-        .stButton>button {{
-            background: linear-gradient(90deg, #FF4B4B 0%, #FF6B6B 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 30px;
-            font-size: 16px;
-            font-weight: 600;
-            width: 100%;
-            transition: transform 0.1s ease;
-            box-shadow: 0 4px 6px rgba(255, 75, 75, 0.2);
-        }}
-        
-        .stButton>button:hover {{
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(255, 75, 75, 0.3);
-        }}
+/* Input Kutuları */
+.stTextInput input, .stNumberInput input, .stDateInput input {{
+    background-color: #ffffff !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    color: #333 !important;
+}}
 
-        /* Uyarı ve Başarı Kutuları */
-        .stAlert {{
-            border-radius: 8px;
-        }}
-        </style>
-        
-        <div class="floating-container">
-            {floating_items}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+/* Buton */
+.stButton>button {{
+    background-color: #333;
+    color: white;
+    border-radius: 8px;
+    padding: 12px;
+    width: 100%;
+    font-weight: 600;
+    border: none;
+    transition: background-color 0.3s;
+}}
+.stButton>button:hover {{
+    background-color: #000;
+}}
+</style>
 
-modern_tasarim_uygula()
+<div class="floating-container">
+    {floating_items}
+</div>
+"""
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
+# Tasarımı Çalıştır
+hareketli_arkaplan_ekle()
 
 # --------------------------------------------------------
-# --- MANTIK VE HESAPLAMA (AYNI) ---
+# --- MANTIK VE HESAPLAMA ---
 
 def puani_donustur(p):
     mapping = {
