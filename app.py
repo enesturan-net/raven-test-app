@@ -5,9 +5,9 @@ from docx.shared import Pt
 import io
 
 # --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Raven Test Analizi", page_icon="🧠")
+st.set_page_config(page_title="Raven Test Analizi")
 
-st.title("🧠 Raven Testi: Otomatik Analiz ve Raporlama")
+st.title("Raven Testi: Otomatik Analiz ve Raporlama")
 st.markdown("Bu araç, girilen verileri uluslararası normlarla (Çocuk & Yetişkin) karşılaştırarak otomatik Word raporu oluşturur.")
 
 # --- 1. MANTIK VE VERİ TABANI ---
@@ -39,7 +39,7 @@ ulke_isimleri = {
     "RU": "Rusya"
 }
 
-# DEV VERİ TABANI (Kısaltılmamış Tam Versiyon)
+# DEV VERİ TABANI (Tam Versiyon)
 veritabani = {
     "UK": {
         "75-80": {95:33, 90:30, 75:22, 50:16, 25:13}, "81-86": {95:34, 90:32, 75:26, 50:19, 25:14},
@@ -139,7 +139,8 @@ with col1:
 with col2:
     dob = st.date_input("Doğum Tarihi", min_value=date(1920, 1, 1))
 
-dogru = st.number_input("Test Doğru Sayısı (0-28 Arası)", min_value=0, max_28=28, step=1)
+# HATALI KOD BURADAYDI - DÜZELTİLDİ:
+dogru = st.number_input("Test Doğru Sayısı (0-28 Arası)", min_value=0, max_value=28, step=1)
 
 # Hesaplama Butonu
 if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
@@ -156,9 +157,9 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
         yas_ay_artik = yas_ay_toplam % 12
         spm_puani = puani_donustur(dogru)
 
-        st.success(f"✅ Hesaplama Başarılı! Kişi: {yas_yil} Yaş {yas_ay_artik} Ay ({yas_ay_toplam} Aylık). SPM Puanı: {spm_puani}")
+        st.success(f"Hesaplama Başarılı! Kişi: {yas_yil} Yaş {yas_ay_artik} Ay ({yas_ay_toplam} Aylık). SPM Puanı: {spm_puani}")
         
-        st.subheader("📊 Ülke Normlarına Göre Analiz")
+        st.subheader("Ülke Normlarına Göre Analiz")
         
         sonuclar = []
         
@@ -177,11 +178,9 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
                 yuzdelik_sonuc = "5. Yüzdeliğin Altında (Düşük)"
                 dilimler = sorted(bulunan_aralik.keys(), reverse=True)
                 
-                basarili_dilim = 0
                 for dilim in dilimler:
                     if spm_puani >= bulunan_aralik[dilim]:
                         yuzdelik_sonuc = f"%{dilim}'lik dilimdedir (Üstün/Normal Üstü)"
-                        basarili_dilim = dilim
                         break
                 
                 # Ekrana yazdır
@@ -214,7 +213,7 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
             doc.save(bio)
             
             st.download_button(
-                label="📄 Word Raporunu İndir",
+                label="Word Raporunu İndir",
                 data=bio.getvalue(),
                 file_name=f"Raven_Rapor_{ad_soyad.replace(' ', '_')}.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
