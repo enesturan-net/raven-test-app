@@ -8,111 +8,173 @@ import random
 import os
 
 # --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Raven Test Analizi", layout="centered")
+st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon="🧠")
 
-# --- 🎬 HAREKETLİ ARKA PLAN FONKSİYONU ---
-def hareketli_arkaplan_ekle():
+# --- 🎨 TASARIM VE ANİMASYON FONKSİYONU ---
+def modern_tasarim_uygula():
     images_b64 = []
     
-    # GitHub'daki dosya isimlerin tam olarak: 1.jpeg, 2.jpeg ... 7.jpeg
-    # Bu yüzden doğrudan bu isimleri aratıyoruz.
+    # Resimleri Yükle
     for i in range(1, 8):
-        filename = f"{i}.jpeg" 
-        if os.path.exists(filename):
-            try:
-                with open(filename, "rb") as image_file:
-                    encoded = base64.b64encode(image_file.read()).decode()
-                    images_b64.append(f"data:image/jpeg;base64,{encoded}")
-            except Exception as e:
-                st.error(f"Resim okunurken hata: {e}")
-    
-    # Eğer resimler yüklenmezse uyarı ver (Hata ayıklama için)
-    if not images_b64:
-        st.warning(f"⚠️ Arka plan resimleri (1.jpeg - 7.jpeg) bulunamadı. Şu anki klasördeki dosyalar: {os.listdir()}")
-        return
+        # Olası uzantıları kontrol et
+        for ext in ["jpeg", "jpg", "png", "JPG"]:
+            filename = f"{i}.{ext}"
+            if os.path.exists(filename):
+                try:
+                    with open(filename, "rb") as image_file:
+                        encoded = base64.b64encode(image_file.read()).decode()
+                        # CSS için veri formatı
+                        mime = "jpeg" if ext.lower() in ["jpg", "jpeg"] else "png"
+                        images_b64.append(f"data:image/{mime};base64,{encoded}")
+                    break # Dosyayı bulduysa diğer uzantıya bakma
+                except:
+                    pass
 
-    # Görselleri Karıştır
-    random.shuffle(images_b64)
+    # Görsellerden "Yüzen Parçacıklar" HTML'i oluştur
+    floating_items = ""
+    if images_b64:
+        for _ in range(15): # Ekranda toplam 15 tane görsel dönsün (kopyalarıyla)
+            img_src = random.choice(images_b64)
+            left_pos = random.randint(0, 90)       # Soldan %0 ile %90 arası rastgele konum
+            size = random.randint(60, 120)         # 60px ile 120px arası rastgele boyut
+            duration = random.randint(15, 35)      # 15 ile 35 saniye arası rastgele hız
+            delay = random.randint(-20, 0)         # Animasyon hemen başlamış gibi görünsün
+            opacity = random.uniform(0.3, 0.7)     # Hafif şeffaflık
 
-    # CSS Animasyonu İçin HTML Oluştur
-    css_images = ""
-    for img in images_b64:
-        # Her resim ekran boyutunda (100vh) olacak
-        css_images += f'<div style="background-image: url({img}); width: 100%; height: 100vh; background-size: cover; background-position: center;"></div>'
-
-    total_height = len(images_b64) * 100 
-    duration = len(images_b64) * 10 # Hız ayarı (saniye)
+            floating_items += f"""
+            <div class="floating-item" style="
+                left: {left_pos}%;
+                width: {size}px;
+                height: {size}px;
+                background-image: url({img_src});
+                animation-duration: {duration}s;
+                animation-delay: {delay}s;
+                opacity: {opacity};
+            "></div>
+            """
 
     st.markdown(
         f"""
         <style>
-        /* 1. ANA GÖVDEYİ ŞEFFAFLAŞTIR (En Önemli Kısım) */
+        /* 1. ANA FONT VE ARKA PLAN */
         .stApp {{
-            background-color: transparent !important;
+            background-color: #ffffff; /* Beyaz Fon */
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }}
-        [data-testid="stAppViewContainer"] {{
-            background-color: transparent !important;
-        }}
-        [data-testid="stHeader"] {{
-            background-color: rgba(0,0,0,0) !important; /* Üst barı da şeffaf yap */
-        }}
-
-        /* 2. ARKA PLAN ANİMASYON KATMANI */
-        .bg-scroller {{
+        
+        /* 2. YÜZEN GÖRSELLER ANİMASYONU (CSS) */
+        .floating-container {{
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: {total_height}vh;
-            z-index: -9999; /* En arkaya at */
-            animation: slide {duration}s linear infinite;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 0; /* En arkada */
+            pointer-events: none; /* Tıklamayı engelleme */
+        }}
+        
+        .floating-item {{
+            position: absolute;
+            bottom: -150px; /* Ekranın altından başla */
+            background-size: cover;
+            background-position: center;
+            border-radius: 15px; /* Hafif yuvarlak köşeler */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            animation: floatUp linear infinite;
         }}
 
-        @keyframes slide {{
-            0% {{ transform: translateY(0); }}
-            100% {{ transform: translateY(-{total_height - 100}vh); }}
+        @keyframes floatUp {{
+            0% {{ transform: translateY(0) rotate(0deg); }}
+            100% {{ transform: translateY(-120vh) rotate(360deg); }} /* Yukarı git ve dön */
+        }}
+
+        /* 3. FORM ELEMANLARINI SADELEŞTİRME (Minimalist) */
+        
+        /* İçerik kutusu ana container */
+        .block-container {{
+            background-color: rgba(255, 255, 255, 0.90); /* Yarı saydam beyaz */
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); /* Çok hafif gölge */
+            z-index: 1; /* Resimlerin üstünde */
+            margin-top: 50px;
+        }}
+
+        /* Başlıklar */
+        h1 {{
+            color: #2c3e50;
+            font-weight: 700;
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f2f6;
+            margin-bottom: 30px;
         }}
         
-        /* 3. KUTUCUK VE YAZI TASARIMLARI (Okunabilirlik İçin) */
-        .stTextInput, .stNumberInput, .stDateInput {{
-            background-color: rgba(255, 255, 255, 0.95) !important;
-            border-radius: 10px;
-            padding: 5px;
-            border: 1px solid #ddd;
+        h2, h3 {{
+            color: #34495e;
         }}
-        
-        h1, h2, h3, p {{
-            background-color: rgba(255, 255, 255, 0.90); /* Yazı arkası beyaz */
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }}
-        
-        .stButton>button {{
-            background-color: #FF4B4B;
-            color: white;
-            width: 100%;
+
+        /* Input Kutuları (Text, Number, Date) */
+        .stTextInput input, .stNumberInput input, .stDateInput input {{
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
             border-radius: 8px;
-            padding: 15px;
-            font-size: 18px;
+            padding: 10px;
+            color: #495057;
+            transition: all 0.3s;
+        }}
+        
+        /* Kutucuklara tıklayınca */
+        .stTextInput input:focus, .stNumberInput input:focus {{
+            border-color: #FF4B4B;
+            box-shadow: none;
+            background-color: #fff;
+        }}
+
+        /* Etiketler (Label) */
+        label {{
+            color: #6c757d !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+        }}
+
+        /* Buton Tasarımı */
+        .stButton>button {{
+            background: linear-gradient(90deg, #FF4B4B 0%, #FF6B6B 100%);
+            color: white;
             border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(255, 75, 75, 0.2);
+        }}
+        
+        .stButton>button:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 75, 75, 0.3);
+        }}
+
+        /* Uyarı ve Başarı Kutuları */
+        .stAlert {{
+            border-radius: 8px;
         }}
         </style>
         
-        <div class="bg-scroller">
-            {css_images}
+        <div class="floating-container">
+            {floating_items}
         </div>
         """,
         unsafe_allow_html=True
     )
 
-hareketli_arkaplan_ekle()
+modern_tasarim_uygula()
 
 # --------------------------------------------------------
-# --- HESAPLAMA MOTORU ---
-
-st.title("Raven Testi: Otomatik Analiz ve Raporlama")
-st.markdown("Bu araç, girilen verileri uluslararası normlarla (Çocuk & Yetişkin) karşılaştırarak otomatik Word raporu oluşturur.")
+# --- MANTIK VE HESAPLAMA (AYNI) ---
 
 def puani_donustur(p):
     mapping = {
@@ -219,6 +281,9 @@ veritabani = {
         "117-128":{95:42, 90:38, 75:33, 50:28, 25:22}, "129-142":{95:44, 90:41, 75:34, 50:26, 25:19},
     }
 }
+
+st.title("Raven Testi: Otomatik Analiz ve Raporlama")
+st.markdown("Bu araç, girilen verileri uluslararası normlarla (Çocuk & Yetişkin) karşılaştırarak otomatik Word raporu oluşturur.")
 
 col1, col2 = st.columns(2)
 with col1:
