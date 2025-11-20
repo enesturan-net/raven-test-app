@@ -14,7 +14,6 @@ st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon
 def hareketli_arkaplan_ekle():
     images_b64 = []
     
-    # Sadece 1'den 7'ye kadar olanları arka plana alıyoruz (9.jpeg HARİÇ)
     for i in range(1, 8):
         for ext in ["jpeg", "jpg", "png", "JPG"]:
             filename = f"{i}.{ext}"
@@ -31,22 +30,17 @@ def hareketli_arkaplan_ekle():
     if not images_b64:
         return
 
-    # CSS İÇİN HTML OLUŞTURMA
     floating_items = ""
-    for _ in range(15): # Ekranda dönecek resim sayısı
+    for _ in range(15): 
         img_src = random.choice(images_b64)
         left_pos = random.randint(0, 90)
-        
-        # Boyutlar (Senin istediğin %50 büyük hali)
         size = random.randint(75, 150) 
-        
-        duration = random.randint(15, 30)
+        duration = random.randint(15, 35)
         delay = random.randint(-20, 0)
         opacity = random.uniform(0.2, 0.6)
 
         floating_items += f"""<div class="floating-item" style="left: {left_pos}%; width: {size}px; height: {size}px; background-image: url({img_src}); animation-duration: {duration}s; animation-delay: {delay}s; opacity: {opacity};"></div>"""
 
-    # CSS VE HTML KODU
     page_bg_img = f"""
     <style>
     .stApp {{ background-color: #ffffff; }}
@@ -60,19 +54,21 @@ def hareketli_arkaplan_ekle():
         border-radius: 50%;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         animation: floatUp linear infinite;
+        will-change: transform;
+    }}
+    @media only screen and (max-width: 600px) {{
+        .floating-item {{ width: 60px !important; height: 60px !important; opacity: 0.3 !important; }}
     }}
     @keyframes floatUp {{
         0% {{ transform: translateY(0) rotate(0deg); }}
         100% {{ transform: translateY(-130vh) rotate(360deg); }}
     }}
-    /* Form Alanı */
     .block-container {{
         position: relative; z-index: 1;
         background-color: rgba(255, 255, 255, 0.92);
         padding: 2rem; border-radius: 15px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-top: 20px;
     }}
-    /* Buton */
     .stButton>button {{
         background-color: #333; color: white; border-radius: 8px;
         padding: 12px; width: 100%; font-weight: 600; border: none;
@@ -105,7 +101,6 @@ ulke_isimleri = {
     "FR": "Fransa", "TW": "Tayvan", "SK": "Slovakya", "CH": "İsviçre", "RU": "Rusya"
 }
 
-# Veri tabanını aynen koruyoruz
 veritabani = {
     "UK": {"75-80": {95:33, 90:30, 75:22, 50:16, 25:13}, "81-86": {95:34, 90:32, 75:26, 50:19, 25:14}, "87-92": {95:37, 90:35, 75:30, 50:22, 25:15}, "93-98": {95:40, 90:38, 75:33, 50:25, 25:17}, "99-104":{95:42, 90:40, 75:36, 50:31, 25:22}, "105-110":{95:44, 90:42, 75:38, 50:33, 25:25}, "111-116":{95:46, 90:44, 75:41, 50:36, 25:28}, "117-122":{95:48, 90:46, 75:42, 50:38, 25:32}, "123-128":{95:49, 90:47, 75:43, 50:39, 25:33}, "129-134":{95:50, 90:48, 75:44, 50:40, 25:34}, "135-140":{95:51, 90:49, 75:45, 50:41, 25:36}, "141-146":{95:52, 90:50, 75:46, 50:41, 25:37}, "147-152":{95:53, 90:51, 75:47, 50:42, 25:38}, "153-158":{95:54, 90:52, 75:49, 50:43, 25:39}, "159-164":{95:54, 90:53, 75:49, 50:44, 25:41}, "165-186":{95:55, 90:54, 75:50, 50:45, 25:42}, "204-275": {95:59, 90:58, 75:57, 50:54, 25:49}, "276-335": {95:59, 90:58, 75:57, 50:54, 25:49}, "336-395": {95:59, 90:58, 75:57, 50:54, 25:49}, "396-455": {95:59, 90:58, 75:56, 50:54, 25:49}, "456-515": {95:59, 90:58, 75:56, 50:53, 25:48}},
     "US": {"78-83": {95:30, 90:27, 75:21, 50:14, 25:12}, "84-89": {95:33, 90:30, 75:25, 50:17, 25:13}, "90-95": {95:36, 90:33, 75:28, 50:20, 25:14}, "96-101":{95:38, 90:36, 75:31, 50:23, 25:16}, "102-107":{95:40, 90:38, 75:34, 50:26, 25:18}, "108-113":{95:42, 90:40, 75:36, 50:29, 25:21}, "114-119":{95:44, 90:42, 75:38, 50:32, 25:24}, "120-125":{95:46, 90:44, 75:41, 50:34, 25:26}, "126-131":{95:47, 90:45, 75:41, 50:36, 25:28}, "132-137":{95:48, 90:46, 75:43, 50:37, 25:30}, "138-143":{95:49, 90:47, 75:44, 50:38, 25:32}, "144-149":{95:50, 90:48, 75:45, 50:39, 25:33}, "150-198":{95:51, 90:49, 75:46, 50:40, 25:34}, "204-275": {95:59, 90:58, 75:56, 50:52, 25:47}, "276-335": {95:59, 90:58, 75:56, 50:52, 25:47}, "336-395": {95:59, 90:58, 75:56, 50:52, 25:47}, "396-455": {95:59, 90:58, 75:56, 50:52, 25:47}},
@@ -119,6 +114,56 @@ veritabani = {
     "NL": {"75-86": {95:35, 90:32, 75:22, 50:16, 25:15}, "87-98": {95:41, 90:35, 75:30, 50:22, 25:19}, "99-110":{95:46, 90:40, 75:36, 50:25, 25:22}, "111-122":{95:48, 90:44, 75:41, 50:33, 25:28}, "123-134":{95:51, 90:48, 75:43, 50:38, 25:32}, "135-150":{95:52, 90:50, 75:46, 50:39, 25:35}},
     "QA": {"69-80": {95:19, 90:18, 75:15, 50:14, 25:11}, "81-92": {95:23, 90:23, 75:17, 50:15, 25:13}, "93-104":{95:35, 90:35, 75:28, 50:19, 25:14}, "105-116":{95:40, 90:38, 75:30, 50:26, 25:20}, "117-128":{95:42, 90:38, 75:33, 50:28, 25:22}, "129-142":{95:44, 90:41, 75:34, 50:26, 25:19}}
 }
+
+# --- POP-UP (MODAL) FONKSİYONU ---
+@st.dialog("Raven Test Sonuçları")
+def popup_rapor(ad_soyad, dob, yas_yil, yas_ay_artik, dogru, spm_puani, sonuclar):
+    # 1. Görseli Göster (Varsa)
+    image_path = "9.jpeg"
+    if os.path.exists(image_path):
+        st.image(image_path, use_container_width=True)
+        
+        # 2. Özel Uyarı Mesajı
+        st.markdown("""
+            <div style="background-color: white; padding: 15px; border-radius: 10px; border: 3px solid #FF4B4B; text-align: center; margin-bottom: 20px;">
+                <h4 style="color: #FF4B4B; margin: 0; font-weight: bold;">⚠️ Mal mal bakma ekrana dosya indi indirilenlere bak</h4>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.write("---")
+    st.write(f"**Ad Soyad:** {ad_soyad}")
+    st.write(f"**Yaş:** {yas_yil} Yıl {yas_ay_artik} Ay")
+    st.write(f"**Puan:** {spm_puani} (Ham: {dogru})")
+    
+    # 3. Word Dosyasını Hazırla
+    doc = Document()
+    doc.add_heading('RAVEN TESTİ PERFORMANS RAPORU', 0).alignment = 1
+    
+    p = doc.add_paragraph()
+    p.add_run(f"Ad Soyad: {ad_soyad}\n").bold = True
+    p.add_run(f"Doğum Tarihi: {dob.strftime('%d.%m.%Y')} ({yas_yil} Yıl {yas_ay_artik} Ay)\n")
+    p.add_run(f"Test Tarihi: {date.today().strftime('%d.%m.%Y')}\n")
+    p.add_run(f"Test Puanı: Ham: {dogru} / 28  (SPM: {spm_puani})")
+    
+    doc.add_heading('Uluslararası Norm Karşılaştırması', level=1)
+    
+    for ulke, yuzdelik in sonuclar:
+        p = doc.add_paragraph(style='List Bullet')
+        p.add_run(f"{ad_soyad}, {ulke} normlarına göre kendi yaş grubunda {yuzdelik}.")
+    
+    bio = io.BytesIO()
+    doc.save(bio)
+    
+    # 4. İndirme Butonu
+    st.download_button(
+        label="📥 Word Raporunu İndir",
+        data=bio.getvalue(),
+        file_name=f"Raven_Rapor_{ad_soyad.replace(' ', '_')}.docx",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        type="primary"
+    )
+
+# --- ARAYÜZ ---
 
 st.title("🥀 Raven Testi: Otomatik Çocuk Normu Oluşturucu 🥀")
 st.markdown("💅Bu araç, Nisa Kaplan'ın Değerli Vaktinin Heba Olmaması İçin Özel Olarak Geliştirilmiştir💅")
@@ -143,10 +188,6 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
         yas_yil = yas_ay_toplam // 12
         yas_ay_artik = yas_ay_toplam % 12
         spm_puani = puani_donustur(dogru)
-
-        st.success(f"Hesaplama Başarılı! Kişi: {yas_yil} Yaş {yas_ay_artik} Ay ({yas_ay_toplam} Aylık). SPM Puanı: {spm_puani}")
-        
-        st.subheader("Ülke Normlarına Göre Analiz")
         
         sonuclar = []
         
@@ -169,49 +210,10 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
                         yuzdelik_sonuc = f"%{dilim}'lik dilimdedir (Üstün/Normal Üstü)"
                         break
                 
-                st.write(f"**{ulke_adi}:** {yuzdelik_sonuc}")
                 sonuclar.append((ulke_adi, yuzdelik_sonuc))
 
         if not sonuclar:
             st.warning("Bu yaş grubu için veri tabanında kayıt bulunamadı.")
         else:
-            # --- 9.JPEG GÖRSELİ VE MESAJI BURADA GÖSTERİLİYOR ---
-            # Eğer '9.jpeg' bulunursa göster
-            image_path = "9.jpeg"
-            if os.path.exists(image_path):
-                st.markdown("---") # Araya çizgi çek
-                # Görseli ortala ve büyük göster
-                st.image(image_path, use_container_width=True) 
-                
-                # Beyaz kutu içinde uyarı mesajı
-                st.markdown("""
-                    <div style="background-color: white; padding: 20px; border-radius: 10px; border: 2px solid #FF4B4B; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                        <h3 style="color: #FF4B4B; margin: 0; font-weight: bold;">⚠️ Mal mal bakma ekrana dosya indi indirilenlere bak</h3>
-                    </div>
-                    <br>
-                """, unsafe_allow_html=True)
-            
-            doc = Document()
-            doc.add_heading('RAVEN TESTİ PERFORMANS RAPORU', 0).alignment = 1
-            
-            p = doc.add_paragraph()
-            p.add_run(f"Ad Soyad: {ad_soyad}\n").bold = True
-            p.add_run(f"Doğum Tarihi: {dob.strftime('%d.%m.%Y')} ({yas_yil} Yıl {yas_ay_artik} Ay)\n")
-            p.add_run(f"Test Tarihi: {bugun.strftime('%d.%m.%Y')}\n")
-            p.add_run(f"Test Puanı: Ham: {dogru} / 28  (SPM: {spm_puani})")
-            
-            doc.add_heading('Uluslararası Norm Karşılaştırması', level=1)
-            
-            for ulke, yuzdelik in sonuclar:
-                p = doc.add_paragraph(style='List Bullet')
-                p.add_run(f"{ad_soyad}, {ulke} normlarına göre kendi yaş grubunda {yuzdelik}.")
-            
-            bio = io.BytesIO()
-            doc.save(bio)
-            
-            st.download_button(
-                label="Word Raporunu İndir",
-                data=bio.getvalue(),
-                file_name=f"Raven_Rapor_{ad_soyad.replace(' ', '_')}.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            )
+            # Hesaplama bitti, POP-UP (Dialog) açıyoruz
+            popup_rapor(ad_soyad, dob, yas_yil, yas_ay_artik, dogru, spm_puani, sonuclar)
