@@ -8,7 +8,7 @@ import random
 import os
 
 # --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon="🧠")
+st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon="🐵,")
 
 # --- OTURUM DURUMLARI (SESSION STATE) ---
 if 'analiz_yapildi' not in st.session_state:
@@ -231,7 +231,7 @@ veritabani = {
 }
 
 st.title("🥀 Raven Testi: Otomatik Çocuk Normu Oluşturucu 🥀")
-st.markdown("💅Bu araç, Nisa Kaplan'ın Değerli Vaktinin Heba Olmaması İçin Özel Olarak Geliştirilmiştir💅")
+st.markdown("💅Bu araç, Nisa Kaplan'ın Değerli Vaktinin Heba Olmaması İçin Özel Olarak Geliştirilmiştir💅(❗️❗️Nisa'nın Alanına Girmekten Özellikle Uzak Durulmuştur❗️❗️)")
 
 col1, col2 = st.columns(2)
 with col1:
@@ -324,3 +324,4 @@ if st.session_state.analiz_yapildi:
 # Sayfa yenilendiğinde eğer popup_ac True ise Dialog'u göster
 if st.session_state.popup_ac:
     show_popup_modal()
+
