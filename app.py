@@ -247,7 +247,7 @@ veritabani = {
 }
 
 st.title("🥀 Raven Testi: Otomatik Çocuk Normu Oluşturucu 🥀 ")
-st.markdown("💅Bu araç, Nisa Kaplan'ın Değerli Vaktinin Heba Olmaması İçin Özel Olarak Geliştirilmiştir💅 (❗️❗️Nisa'nın Alaına Girmekten Özellikle Uzak Durulmuştur❗️❗️ ")
+st.markdown("💅Bu araç, Nisa Kaplan'ın Değerli Vaktinin Heba Olmaması İçin Özel Olarak Geliştirilmiştir💅 (❗️❗️Nisa'nın Alanına Girmekten Özellikle Uzak Durulmuştur❗️❗️ ")
 
 col1, col2 = st.columns(2)
 with col1:
@@ -325,5 +325,6 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
                 file_name=f"Raven_Rapor_{ad_soyad.replace(' ', '_')}.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
+
 
 
