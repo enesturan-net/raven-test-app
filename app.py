@@ -7,7 +7,7 @@ import io
 # --- SAYFA AYARLARI ---
 st.set_page_config(page_title="Raven Test Analizi")
 
-st.title("Raven Testi: Otomatik Analiz ve Raporlama")
+st.title("Raven Testi Otomatik Çocuk Norm Grubu Oluşturma (Bu program Nisa Kaplan'ın değerli zamanı harap olmasın diye özel olarak oluşturulmuştur 🎃🥀)")
 st.markdown("Bu araç, girilen verileri uluslararası normlarla (Çocuk & Yetişkin) karşılaştırarak otomatik Word raporu oluşturur.")
 
 # --- 1. MANTIK VE VERİ TABANI ---
@@ -218,3 +218,4 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
                 file_name=f"Raven_Rapor_{ad_soyad.replace(' ', '_')}.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
+
