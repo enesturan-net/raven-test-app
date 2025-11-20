@@ -3,14 +3,114 @@ from datetime import date, datetime
 from docx import Document
 from docx.shared import Pt
 import io
+import base64
+import random
 
 # --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Raven Test Analizi")
+st.set_page_config(page_title="Raven Test Analizi", layout="centered")
 
-st.title("Raven Testi Otomatik Çocuk Norm Grubu Oluşturma (Bu program Nisa Kaplan'ın değerli zamanı harap olmasın diye özel olarak oluşturulmuştur 🎃🥀)")
+# --- 🎬 HAREKETLİ ARKA PLAN FONKSİYONU ---
+def hareketli_arkaplan_ekle():
+    # 1. Görselleri Yükle ve Base64'e Çevir
+    images_b64 = []
+    # 1.jpeg'den 7.jpeg'e kadar olan dosyaları okuyoruz
+    for i in range(1, 8):
+        filename = f"{i}.jpeg"
+        try:
+            with open(filename, "rb") as image_file:
+                encoded = base64.b64encode(image_file.read()).decode()
+                images_b64.append(f"data:image/jpeg;base64,{encoded}")
+        except FileNotFoundError:
+            pass # Dosya bulunamazsa atla
+
+    if not images_b64:
+        return # Hiç resim yoksa fonksiyondan çık
+
+    # 2. Görselleri Rastgele Karıştır (Her açılışta farklı sıra)
+    random.shuffle(images_b64)
+
+    # 3. CSS Animasyonu Oluştur
+    # Tüm resimleri dikey olarak birleştiren bir şerit oluşturuyoruz
+    css_images = ""
+    for img in images_b64:
+        # Her resim ekranı kaplayacak şekilde ayarlanıyor
+        css_images += f'<div style="background-image: url({img}); width: 100%; height: 100vh; background-size: cover; background-position: center;"></div>'
+
+    # Toplam yükseklik: Resim Sayısı * 100vh
+    total_height = len(images_b64) * 100 
+    
+    # Animasyon Süresi: Resim başına 10 saniye (Orta Hız)
+    duration = len(images_b64) * 10 
+
+    st.markdown(
+        f"""
+        <style>
+        /* Arka Plan Konteyneri */
+        .stApp::before {{
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: {total_height}vh; /* Tüm resimlerin toplam yüksekliği */
+            z-index: -1;
+            animation: slide {duration}s linear infinite;
+        }}
+
+        /* Resimlerin Olduğu HTML İçerik */
+        .bg-scroller {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: {total_height}vh;
+            z-index: -1;
+            animation: slide {duration}s linear infinite;
+        }}
+
+        @keyframes slide {{
+            0% {{ transform: translateY(-{total_height - 100}vh); }} /* En alttan başla */
+            100% {{ transform: translateY(0); }} /* En üste git */
+        }}
+
+        /* İçerik Kutularının Okunabilirliği İçin Beyaz Fon */
+        .stTextInput, .stNumberInput, .stDateInput {{
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }}
+        h1, h2, h3, p {{
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+        .stButton>button {{
+            background-color: #FF4B4B;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+        }}
+        </style>
+        
+        <div class="bg-scroller">
+            {css_images}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Fonksiyonu Çalıştır
+hareketli_arkaplan_ekle()
+
+# --------------------------------------------------------
+# --- STANDART HESAPLAMA KODU (DEĞİŞMEDİ) ---
+
+st.title("Raven Testi: Otomatik Analiz ve Raporlama")
 st.markdown("Bu araç, girilen verileri uluslararası normlarla (Çocuk & Yetişkin) karşılaştırarak otomatik Word raporu oluşturur.")
-
-# --- 1. MANTIK VE VERİ TABANI ---
 
 def puani_donustur(p):
     mapping = {
@@ -22,24 +122,12 @@ def puani_donustur(p):
     return mapping.get(p, 0)
 
 ulke_isimleri = {
-    "UK": "İngiltere (Birleşik Krallık)",
-    "US": "Amerika Birleşik Devletleri",
-    "CN": "Çin",
-    "NZ": "Yeni Zelanda",
-    "AU": "Avustralya",
-    "PL": "Polonya",
-    "SI": "Slovenya",
-    "AR": "Arjantin",
-    "QA": "Katar",
-    "NL": "Hollanda",
-    "FR": "Fransa",
-    "TW": "Tayvan",
-    "SK": "Slovakya",
-    "CH": "İsviçre",
-    "RU": "Rusya"
+    "UK": "İngiltere (Birleşik Krallık)", "US": "Amerika Birleşik Devletleri",
+    "CN": "Çin", "NZ": "Yeni Zelanda", "AU": "Avustralya", "PL": "Polonya",
+    "SI": "Slovenya", "AR": "Arjantin", "QA": "Katar", "NL": "Hollanda",
+    "FR": "Fransa", "TW": "Tayvan", "SK": "Slovakya", "CH": "İsviçre", "RU": "Rusya"
 }
 
-# DEV VERİ TABANI (Tam Versiyon)
 veritabani = {
     "UK": {
         "75-80": {95:33, 90:30, 75:22, 50:16, 25:13}, "81-86": {95:34, 90:32, 75:26, 50:19, 25:14},
@@ -132,22 +220,18 @@ veritabani = {
 
 # --- ARAYÜZ BÖLÜMÜ ---
 
-# Kullanıcıdan Girdi Alma
 col1, col2 = st.columns(2)
 with col1:
     ad_soyad = st.text_input("Ad Soyad", placeholder="Örn: Ahmet Yılmaz")
 with col2:
     dob = st.date_input("Doğum Tarihi", min_value=date(1920, 1, 1))
 
-# HATALI KOD BURADAYDI - DÜZELTİLDİ:
 dogru = st.number_input("Test Doğru Sayısı (0-28 Arası)", min_value=0, max_value=28, step=1)
 
-# Hesaplama Butonu
 if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
     if not ad_soyad:
         st.error("Lütfen Ad Soyad giriniz.")
     else:
-        # Yaş Hesapla
         bugun = date.today()
         yas_ay_toplam = (bugun.year - dob.year) * 12 + (bugun.month - dob.month)
         if bugun.day < dob.day:
@@ -163,7 +247,6 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
         
         sonuclar = []
         
-        # Tüm Ülkeleri Tara
         for ulke_kodu, veri in veritabani.items():
             ulke_adi = ulke_isimleri.get(ulke_kodu, ulke_kodu)
             bulunan_aralik = None
@@ -183,16 +266,12 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
                         yuzdelik_sonuc = f"%{dilim}'lik dilimdedir (Üstün/Normal Üstü)"
                         break
                 
-                # Ekrana yazdır
                 st.write(f"**{ulke_adi}:** {yuzdelik_sonuc}")
-                
-                # Rapor için kaydet
                 sonuclar.append((ulke_adi, yuzdelik_sonuc))
 
         if not sonuclar:
             st.warning("Bu yaş grubu için veri tabanında kayıt bulunamadı.")
         else:
-            # --- WORD OLUŞTURMA (RAM ÜZERİNDE) ---
             doc = Document()
             doc.add_heading('RAVEN TESTİ PERFORMANS RAPORU', 0).alignment = 1
             
@@ -208,7 +287,6 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
                 p = doc.add_paragraph(style='List Bullet')
                 p.add_run(f"{ad_soyad}, {ulke} normlarına göre kendi yaş grubunda {yuzdelik}.")
             
-            # Dosyayı belleğe kaydet
             bio = io.BytesIO()
             doc.save(bio)
             
@@ -218,4 +296,3 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
                 file_name=f"Raven_Rapor_{ad_soyad.replace(' ', '_')}.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
-
