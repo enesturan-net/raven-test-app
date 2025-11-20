@@ -8,7 +8,7 @@ import random
 import os
 
 # --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon="🐵,")
+st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon="💗")
 
 # --- OTURUM DURUMLARI (SESSION STATE) ---
 if 'analiz_yapildi' not in st.session_state:
@@ -324,4 +324,5 @@ if st.session_state.analiz_yapildi:
 # Sayfa yenilendiğinde eğer popup_ac True ise Dialog'u göster
 if st.session_state.popup_ac:
     show_popup_modal()
+
 
