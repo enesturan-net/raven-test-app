@@ -8,9 +8,9 @@ import random
 import os
 
 # --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon=":)")
+st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon="🧠")
 
-# --- 🎬 HAREKETLİ ARKA PLAN FONKSİYONU ---
+# --- 🎬 HAREKETLİ ARKA PLAN FONKSİYONU (MOBİL DOSTU) ---
 def hareketli_arkaplan_ekle():
     images_b64 = []
     
@@ -29,27 +29,23 @@ def hareketli_arkaplan_ekle():
                 except:
                     pass
 
-    # Eğer resim yoksa veya yüklenemediyse çık
     if not images_b64:
         return
 
-    # CSS İÇİN HTML OLUŞTURMA (GİRİNTİSİZ)
+    # CSS İÇİN HTML OLUŞTURMA
     floating_items = ""
-    for _ in range(15): # 15 adet yüzen görsel
+    # Bilgisayarda 15, Telefonda otomatik azalacak (CSS ile değil ama yükü hafifletmek için sayı 12'ye çekildi)
+    for _ in range(12): 
         img_src = random.choice(images_b64)
         left_pos = random.randint(0, 90)
-        # --- BOYUT DEĞİŞİKLİĞİ BURADA YAPILDI ---
-        # Eski boyut: random.randint(50, 100)
-        # Yeni boyut (%50 daha büyük): 75px ile 150px arası rastgele
-        size = random.randint(75, 150) 
-        duration = random.randint(15, 30)
+        size = random.randint(60, 130) 
+        duration = random.randint(15, 40) # Daha yavaş (performans artırır)
         delay = random.randint(-20, 0)
-        opacity = random.uniform(0.2, 0.6) # Biraz daha şeffaf
+        opacity = random.uniform(0.2, 0.5) # Daha şeffaf
 
-        # HTML String'i (Tek satırda birleştirildi hatayı önlemek için)
         floating_items += f"""<div class="floating-item" style="left: {left_pos}%; width: {size}px; height: {size}px; background-image: url({img_src}); animation-duration: {duration}s; animation-delay: {delay}s; opacity: {opacity};"></div>"""
 
-    # CSS VE HTML KODU (Python Girintisinden Bağımsız)
+    # CSS VE HTML KODU
     page_bg_img = f"""
 <style>
 /* ANA KAPLAYICI */
@@ -66,38 +62,52 @@ def hareketli_arkaplan_ekle():
     height: 100vh;
     overflow: hidden;
     z-index: 0;
-    pointer-events: none;
+    pointer-events: none; /* Telefonda dokunmayı engellemek için KRİTİK */
 }}
 
 .floating-item {{
     position: absolute;
-    bottom: -200px; /* Başlangıç noktasını biraz daha aşağı çektim ki büyük resimler aniden belirmesin */
+    bottom: -200px;
     background-size: cover;
     background-position: center;
-    border-radius: 50%; /* Tam yuvarlak yaptım, daha estetik durur */
+    border-radius: 50%;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     animation: floatUp linear infinite;
+    will-change: transform; /* Telefon işlemcisine animasyon olduğunu bildirir (Performans Artırır) */
+}}
+
+/* MOBİL ÖZEL AYARLAR */
+@media only screen and (max-width: 600px) {{
+    .floating-item {{
+        width: 50px !important; /* Telefonda resimler daha küçük olsun */
+        height: 50px !important;
+        opacity: 0.3 !important; /* Daha silik olsun */
+    }}
+    /* Telefonda form kutusunu daha yukarı al */
+    .block-container {{
+        padding-top: 1rem !important;
+    }}
 }}
 
 @keyframes floatUp {{
     0% {{ transform: translateY(0) rotate(0deg); }}
-    100% {{ transform: translateY(-130vh) rotate(360deg); }} /* Bitiş noktasını biraz daha yukarı çektim */
+    100% {{ transform: translateY(-120vh) rotate(360deg); }}
 }}
 
-/* FORM ALANI TASARIMI (SADELEŞTİRİLMİŞ) */
+/* FORM ALANI TASARIMI */
 .block-container {{
     position: relative;
-    z-index: 1;
-    background-color: rgba(255, 255, 255, 0.92); /* Daha opak beyaz */
+    z-index: 5; /* Formu kesinlikle öne al */
+    background-color: rgba(255, 255, 255, 0.94); /* Telefonda okunabilirlik için daha opak */
     padding: 2rem;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
     margin-top: 20px;
 }}
 
 h1 {{
     color: #333;
-    font-size: 2.2rem;
+    font-size: 1.8rem; /* Mobilde başlık taşmasın diye küçültüldü */
     font-weight: 700;
     text-align: center;
     margin-bottom: 10px;
@@ -110,6 +120,7 @@ h1 {{
     border-radius: 8px !important;
     padding: 10px !important;
     color: #333 !important;
+    font-size: 16px !important; /* iPhone'da zoom yapmayı engeller */
 }}
 
 /* Buton */
@@ -117,7 +128,7 @@ h1 {{
     background-color: #333;
     color: white;
     border-radius: 8px;
-    padding: 12px;
+    padding: 15px; /* Telefonda parmakla basmak kolay olsun */
     width: 100%;
     font-weight: 600;
     border: none;
@@ -134,11 +145,10 @@ h1 {{
 """
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Tasarımı Çalıştır
 hareketli_arkaplan_ekle()
 
 # --------------------------------------------------------
-# --- MANTIK VE HESAPLAMA ---
+# --- MANTIK VE HESAPLAMA (AYNI) ---
 
 def puani_donustur(p):
     mapping = {
@@ -246,9 +256,6 @@ veritabani = {
     }
 }
 
-st.title("🥀 Raven Testi: Otomatik Çocuk Normu Oluşturucu 🥀 ")
-st.markdown("💅Bu araç, Nisa Kaplan'ın Değerli Vaktinin Heba Olmaması İçin Özel Olarak Geliştirilmiştir💅 (❗️❗️Nisa'nın Alanına Girmekten Özellikle Uzak Durulmuştur❗️❗️ ")
-
 col1, col2 = st.columns(2)
 with col1:
     ad_soyad = st.text_input("Ad Soyad", placeholder="Örn: Ahmet Yılmaz")
@@ -325,6 +332,3 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
                 file_name=f"Raven_Rapor_{ad_soyad.replace(' ', '_')}.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
-
-
-
