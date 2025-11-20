@@ -5,109 +5,112 @@ from docx.shared import Pt
 import io
 import base64
 import random
+import os
 
 # --- SAYFA AYARLARI ---
 st.set_page_config(page_title="Raven Test Analizi", layout="centered")
 
-# --- 🎬 HAREKETLİ ARKA PLAN FONKSİYONU ---
+# --- 🎬 HAREKETLİ ARKA PLAN FONKSİYONU (AKILLI VERSİYON) ---
 def hareketli_arkaplan_ekle():
-    # 1. Görselleri Yükle ve Base64'e Çevir
     images_b64 = []
-    # 1.jpeg'den 7.jpeg'e kadar olan dosyaları okuyoruz
+    bulunan_sayisi = 0
+    
+    # 1'den 7'ye kadar tüm resim numaralarını kontrol et
     for i in range(1, 8):
-        filename = f"{i}.jpeg"
-        try:
-            with open(filename, "rb") as image_file:
-                encoded = base64.b64encode(image_file.read()).decode()
-                images_b64.append(f"data:image/jpeg;base64,{encoded}")
-        except FileNotFoundError:
-            pass # Dosya bulunamazsa atla
+        # Olası tüm uzantıları dene
+        olasi_isimler = [f"{i}.jpeg", f"{i}.jpg", f"{i}.png", f"{i}.JPG", f"{i}.JPEG", f"{i}.PNG"]
+        
+        dosya_bulundu = False
+        for filename in olasi_isimler:
+            if os.path.exists(filename):
+                try:
+                    with open(filename, "rb") as image_file:
+                        encoded = base64.b64encode(image_file.read()).decode()
+                        # Dosya uzantısını al (mime type için)
+                        ext = filename.split('.')[-1].lower()
+                        # jpg ise jpeg yap (tarayıcı uyumu için)
+                        if ext == 'jpg': ext = 'jpeg'
+                        
+                        images_b64.append(f"data:image/{ext};base64,{encoded}")
+                        bulunan_sayisi += 1
+                        dosya_bulundu = True
+                        break # Doğru uzantıyı bulduk, diğerlerini deneme
+                except Exception as e:
+                    st.error(f"Hata: {filename} okunurken sorun oluştu: {e}")
+        
+        # Debug (Hata Ayıklama) - Eğer resim bulunamazsa ekrana yazma (İsteğe bağlı)
+        # if not dosya_bulundu:
+        #     print(f"{i} numaralı resim bulunamadı.")
 
     if not images_b64:
-        return # Hiç resim yoksa fonksiyondan çık
+        st.warning("⚠️ Arka plan resimleri yüklenemedi. Lütfen GitHub'da '1.jpg', '2.jpg'... gibi dosyaların yüklü olduğundan emin olun.")
+        return
 
-    # 2. Görselleri Rastgele Karıştır (Her açılışta farklı sıra)
+    # Görselleri Karıştır
     random.shuffle(images_b64)
 
-    # 3. CSS Animasyonu Oluştur
-    # Tüm resimleri dikey olarak birleştiren bir şerit oluşturuyoruz
+    # CSS Oluştur
     css_images = ""
     for img in images_b64:
-        # Her resim ekranı kaplayacak şekilde ayarlanıyor
         css_images += f'<div style="background-image: url({img}); width: 100%; height: 100vh; background-size: cover; background-position: center;"></div>'
 
-    # Toplam yükseklik: Resim Sayısı * 100vh
     total_height = len(images_b64) * 100 
-    
-    # Animasyon Süresi: Resim başına 10 saniye (Orta Hız)
-    duration = len(images_b64) * 10 
+    duration = len(images_b64) * 12 # Biraz daha yavaşlattım (12 sn)
 
     st.markdown(
         f"""
         <style>
-        /* Arka Plan Konteyneri */
         .stApp::before {{
             content: "";
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: {total_height}vh; /* Tüm resimlerin toplam yüksekliği */
+            top: 0; left: 0; width: 100%; height: {total_height}vh;
             z-index: -1;
             animation: slide {duration}s linear infinite;
         }}
-
-        /* Resimlerin Olduğu HTML İçerik */
         .bg-scroller {{
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: {total_height}vh;
+            position: fixed; top: 0; left: 0; width: 100%; height: {total_height}vh;
             z-index: -1;
             animation: slide {duration}s linear infinite;
         }}
-
         @keyframes slide {{
-            0% {{ transform: translateY(-{total_height - 100}vh); }} /* En alttan başla */
-            100% {{ transform: translateY(0); }} /* En üste git */
+            0% {{ transform: translateY(-{total_height - 100}vh); }}
+            100% {{ transform: translateY(0); }}
         }}
-
-        /* İçerik Kutularının Okunabilirliği İçin Beyaz Fon */
+        
+        /* Kutucuk Tasarımları (Daha Okunabilir) */
         .stTextInput, .stNumberInput, .stDateInput {{
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.95) !important;
             border-radius: 10px;
-            padding: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 5px;
+            border: 1px solid #ddd;
         }}
+        /* Başlık ve Yazıların Arkası */
         h1, h2, h3, p {{
             background-color: rgba(255, 255, 255, 0.85);
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
         }}
+        /* Buton Tasarımı */
         .stButton>button {{
             background-color: #FF4B4B;
             color: white;
-            border: none;
-            padding: 10px 24px;
+            width: 100%;
             border-radius: 8px;
-            font-weight: bold;
+            padding: 15px;
+            font-size: 18px;
         }}
         </style>
-        
-        <div class="bg-scroller">
-            {css_images}
-        </div>
+        <div class="bg-scroller">{css_images}</div>
         """,
         unsafe_allow_html=True
     )
 
-# Fonksiyonu Çalıştır
 hareketli_arkaplan_ekle()
 
 # --------------------------------------------------------
-# --- STANDART HESAPLAMA KODU (DEĞİŞMEDİ) ---
+# --- HESAPLAMA MOTORU (AYNI KALDI) ---
 
 st.title("Raven Testi: Otomatik Analiz ve Raporlama")
 st.markdown("Bu araç, girilen verileri uluslararası normlarla (Çocuk & Yetişkin) karşılaştırarak otomatik Word raporu oluşturur.")
@@ -218,8 +221,6 @@ veritabani = {
     }
 }
 
-# --- ARAYÜZ BÖLÜMÜ ---
-
 col1, col2 = st.columns(2)
 with col1:
     ad_soyad = st.text_input("Ad Soyad", placeholder="Örn: Ahmet Yılmaz")
@@ -238,61 +239,4 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
             yas_ay_toplam -= 1
         
         yas_yil = yas_ay_toplam // 12
-        yas_ay_artik = yas_ay_toplam % 12
-        spm_puani = puani_donustur(dogru)
-
-        st.success(f"Hesaplama Başarılı! Kişi: {yas_yil} Yaş {yas_ay_artik} Ay ({yas_ay_toplam} Aylık). SPM Puanı: {spm_puani}")
-        
-        st.subheader("Ülke Normlarına Göre Analiz")
-        
-        sonuclar = []
-        
-        for ulke_kodu, veri in veritabani.items():
-            ulke_adi = ulke_isimleri.get(ulke_kodu, ulke_kodu)
-            bulunan_aralik = None
-            
-            for aralik_key in veri:
-                min_ay, max_ay = map(int, aralik_key.split("-"))
-                if min_ay <= yas_ay_toplam <= max_ay:
-                    bulunan_aralik = veri[aralik_key]
-                    break
-            
-            if bulunan_aralik:
-                yuzdelik_sonuc = "5. Yüzdeliğin Altında (Düşük)"
-                dilimler = sorted(bulunan_aralik.keys(), reverse=True)
-                
-                for dilim in dilimler:
-                    if spm_puani >= bulunan_aralik[dilim]:
-                        yuzdelik_sonuc = f"%{dilim}'lik dilimdedir (Üstün/Normal Üstü)"
-                        break
-                
-                st.write(f"**{ulke_adi}:** {yuzdelik_sonuc}")
-                sonuclar.append((ulke_adi, yuzdelik_sonuc))
-
-        if not sonuclar:
-            st.warning("Bu yaş grubu için veri tabanında kayıt bulunamadı.")
-        else:
-            doc = Document()
-            doc.add_heading('RAVEN TESTİ PERFORMANS RAPORU', 0).alignment = 1
-            
-            p = doc.add_paragraph()
-            p.add_run(f"Ad Soyad: {ad_soyad}\n").bold = True
-            p.add_run(f"Doğum Tarihi: {dob.strftime('%d.%m.%Y')} ({yas_yil} Yıl {yas_ay_artik} Ay)\n")
-            p.add_run(f"Test Tarihi: {bugun.strftime('%d.%m.%Y')}\n")
-            p.add_run(f"Test Puanı: Ham: {dogru} / 28  (SPM: {spm_puani})")
-            
-            doc.add_heading('Uluslararası Norm Karşılaştırması', level=1)
-            
-            for ulke, yuzdelik in sonuclar:
-                p = doc.add_paragraph(style='List Bullet')
-                p.add_run(f"{ad_soyad}, {ulke} normlarına göre kendi yaş grubunda {yuzdelik}.")
-            
-            bio = io.BytesIO()
-            doc.save(bio)
-            
-            st.download_button(
-                label="Word Raporunu İndir",
-                data=bio.getvalue(),
-                file_name=f"Raven_Rapor_{ad_soyad.replace(' ', '_')}.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            )
+        yas_ay_artik = yas_ay_toplam
