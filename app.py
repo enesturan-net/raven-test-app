@@ -239,4 +239,61 @@ if st.button("Analiz Et ve Raporu Hazırla", type="primary"):
             yas_ay_toplam -= 1
         
         yas_yil = yas_ay_toplam // 12
-        yas_ay_artik = yas_ay_toplam
+        yas_ay_artik = yas_ay_toplam % 12
+        spm_puani = puani_donustur(dogru)
+
+        st.success(f"Hesaplama Başarılı! Kişi: {yas_yil} Yaş {yas_ay_artik} Ay ({yas_ay_toplam} Aylık). SPM Puanı: {spm_puani}")
+        
+        st.subheader("Ülke Normlarına Göre Analiz")
+        
+        sonuclar = []
+        
+        for ulke_kodu, veri in veritabani.items():
+            ulke_adi = ulke_isimleri.get(ulke_kodu, ulke_kodu)
+            bulunan_aralik = None
+            
+            for aralik_key in veri:
+                min_ay, max_ay = map(int, aralik_key.split("-"))
+                if min_ay <= yas_ay_toplam <= max_ay:
+                    bulunan_aralik = veri[aralik_key]
+                    break
+            
+            if bulunan_aralik:
+                yuzdelik_sonuc = "5. Yüzdeliğin Altında (Düşük)"
+                dilimler = sorted(bulunan_aralik.keys(), reverse=True)
+                
+                for dilim in dilimler:
+                    if spm_puani >= bulunan_aralik[dilim]:
+                        yuzdelik_sonuc = f"%{dilim}'lik dilimdedir (Üstün/Normal Üstü)"
+                        break
+                
+                st.write(f"**{ulke_adi}:** {yuzdelik_sonuc}")
+                sonuclar.append((ulke_adi, yuzdelik_sonuc))
+
+        if not sonuclar:
+            st.warning("Bu yaş grubu için veri tabanında kayıt bulunamadı.")
+        else:
+            doc = Document()
+            doc.add_heading('RAVEN TESTİ PERFORMANS RAPORU', 0).alignment = 1
+            
+            p = doc.add_paragraph()
+            p.add_run(f"Ad Soyad: {ad_soyad}\n").bold = True
+            p.add_run(f"Doğum Tarihi: {dob.strftime('%d.%m.%Y')} ({yas_yil} Yıl {yas_ay_artik} Ay)\n")
+            p.add_run(f"Test Tarihi: {bugun.strftime('%d.%m.%Y')}\n")
+            p.add_run(f"Test Puanı: Ham: {dogru} / 28  (SPM: {spm_puani})")
+            
+            doc.add_heading('Uluslararası Norm Karşılaştırması', level=1)
+            
+            for ulke, yuzdelik in sonuclar:
+                p = doc.add_paragraph(style='List Bullet')
+                p.add_run(f"{ad_soyad}, {ulke} normlarına göre kendi yaş grubunda {yuzdelik}.")
+            
+            bio = io.BytesIO()
+            doc.save(bio)
+            
+            st.download_button(
+                label="Word Raporunu İndir",
+                data=bio.getvalue(),
+                file_name=f"Raven_Rapor_{ad_soyad.replace(' ', '_')}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
