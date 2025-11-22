@@ -3,125 +3,61 @@ from datetime import date, datetime
 from docx import Document
 from docx.shared import Pt
 import io
-import base64
-import random
-import os
 
 # --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon="💗")
+st.set_page_config(
+    page_title="Raven Test Analizi", 
+    layout="centered", 
+    page_icon="🧠",
+    initial_sidebar_state="collapsed"
+)
 
-# --- OTURUM DURUMLARI (SESSION STATE) ---
-if 'analiz_yapildi' not in st.session_state:
-    st.session_state.analiz_yapildi = False
-if 'sonuclar' not in st.session_state:
-    st.session_state.sonuclar = []
-if 'popup_ac' not in st.session_state:
-    st.session_state.popup_ac = False
-if 'kisi_bilgi' not in st.session_state:
-    st.session_state.kisi_bilgi = {}
-
-# --- POP-UP TETİKLEYİCİ ---
-def popup_tetikle():
-    st.session_state.popup_ac = True
-
-# --- 🎬 HAREKETLİ ARKA PLAN ---
-def hareketli_arkaplan_ekle():
-    images_b64 = []
-    # 1.jpeg - 7.jpeg (9.jpeg HARİÇ)
-    for i in range(1, 8):
-        for ext in ["jpeg", "jpg", "png", "JPG"]:
-            filename = f"{i}.{ext}"
-            if os.path.exists(filename):
-                try:
-                    with open(filename, "rb") as image_file:
-                        encoded = base64.b64encode(image_file.read()).decode()
-                        mime = "jpeg" if ext.lower() in ["jpg", "jpeg"] else "png"
-                        images_b64.append(f"data:image/{mime};base64,{encoded}")
-                    break 
-                except:
-                    pass
-
-    if not images_b64:
-        return
-
-    floating_items = ""
-    for _ in range(15): 
-        img_src = random.choice(images_b64)
-        left_pos = random.randint(0, 90)
-        size = random.randint(75, 150) 
-        duration = random.randint(15, 35)
-        delay = random.randint(-20, 0)
-        opacity = random.uniform(0.2, 0.6)
-
-        floating_items += f"""<div class="floating-item" style="left: {left_pos}%; width: {size}px; height: {size}px; background-image: url({img_src}); animation-duration: {duration}s; animation-delay: {delay}s; opacity: {opacity};"></div>"""
-
-    page_bg_img = f"""
-    <style>
-    .stApp {{ background-color: #ffffff; }}
-    .floating-container {{
-        position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-        overflow: hidden; z-index: 0; pointer-events: none;
-    }}
-    .floating-item {{
-        position: absolute; bottom: -200px;
-        background-size: cover; background-position: center;
-        border-radius: 50%;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        animation: floatUp linear infinite;
-        will-change: transform;
-    }}
-    @media only screen and (max-width: 600px) {{
-        .floating-item {{ width: 60px !important; height: 60px !important; opacity: 0.3 !important; }}
-    }}
-    @keyframes floatUp {{
-        0% {{ transform: translateY(0) rotate(0deg); }}
-        100% {{ transform: translateY(-130vh) rotate(360deg); }}
-    }}
-    .block-container {{
-        position: relative; z-index: 1;
-        background-color: rgba(255, 255, 255, 0.95);
-        padding: 2rem; border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-top: 20px;
-    }}
-    .stButton>button {{
-        background-color: #333; color: white; border-radius: 8px;
-        padding: 12px; width: 100%; font-weight: 600; border: none;
-        transition: background-color 0.3s;
-    }}
-    .stButton>button:hover {{ background-color: #000; }}
-    </style>
-    <div class="floating-container">{floating_items}</div>
-    """
-    st.markdown(page_bg_img, unsafe_allow_html=True)
-
-hareketli_arkaplan_ekle()
-
-# --- POP-UP (DIALOG) ---
-@st.dialog("⚠️ UYARI")
-def show_popup_modal():
-    # 9.jpeg Gösterimi
-    image_path = "9.jpeg"
-    # Uzantı kontrolü
-    if not os.path.exists(image_path):
-        for ext in ["jpg", "png", "JPG"]:
-            if os.path.exists(f"9.{ext}"):
-                image_path = f"9.{ext}"
-                break
+# --- SADE TASARIM (MAC & WINDOWS UYUMLU) ---
+st.markdown("""
+<style>
+    /* Tüm arka planı beyaz yap */
+    .stApp {
+        background-color: #ffffff;
+    }
     
-    if os.path.exists(image_path):
-        st.image(image_path, use_container_width=True)
+    /* Yazıları kesin siyah yap (Mac'te koyu modda kaybolmaması için) */
+    h1, h2, h3, p, div, span, label, .stMarkdown, .stText {
+        color: #262730 !important;
+    }
     
-    st.markdown("""
-        <div style="background-color: white; padding: 15px; border: 3px solid #FF4B4B; border-radius: 10px; text-align: center; margin-top: 10px;">
-            <h3 style="color: #FF4B4B; margin: 0; font-weight: bold;">Mal mal bakma ekrana dosya indi indirilenlere bak</h3>
-        </div>
-    """, unsafe_allow_html=True)
+    /* Input kutularını belirginleştir (Gri fon, Siyah yazı) */
+    .stTextInput input, .stNumberInput input, .stDateInput input {
+        background-color: #f0f2f6 !important;
+        color: #000000 !important;
+        border: 1px solid #d6d6d6;
+    }
     
-    if st.button("Tamam"):
-        st.session_state.popup_ac = False
-        st.rerun()
+    /* Buton Tasarımı */
+    div.stButton > button {
+        background-color: #FF4B4B;
+        color: white !important;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        width: 100%;
+    }
+    div.stButton > button:hover {
+        background-color: #ff3333;
+    }
+    
+    /* Başlık altı boşluk */
+    .block-container {
+        padding-top: 2rem;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# --- MANTIK VE VERİ TABANI (TAMAMI) ---
+# --- BAŞLIK ---
+st.title("Raven Testi: Otomatik Analiz")
+st.markdown("Aşağıdaki bilgileri doldurarak analiz yapabilir ve raporu indirebilirsiniz.")
+
+# --- MANTIK VE VERİ TABANI ---
 
 def puani_donustur(p):
     mapping = {
@@ -139,7 +75,7 @@ ulke_isimleri = {
     "FR": "Fransa", "TW": "Tayvan", "SK": "Slovakya", "CH": "İsviçre", "RU": "Rusya"
 }
 
-# EKSİKSİZ TAM VERİ TABANI
+# TAM VERİ TABANI
 veritabani = {
     "UK": {
         "75-80": {95:33, 90:30, 75:22, 50:16, 25:13}, "81-86": {95:34, 90:32, 75:26, 50:19, 25:14},
@@ -230,8 +166,7 @@ veritabani = {
     }
 }
 
-st.title("🥀 Raven Testi: Otomatik Çocuk Normu Oluşturucu 🥀")
-st.markdown("💅Bu araç, Nisa Kaplan'ın Değerli Vaktinin Heba Olmaması İçin Özel Olarak Geliştirilmiştir💅(❗️❗️Nisa'nın Alanına Girmekten Özellikle Uzak Durulmuştur❗️❗️)")
+# --- ARAYÜZ ---
 
 col1, col2 = st.columns(2)
 with col1:
@@ -246,6 +181,7 @@ if st.button("Analiz Et", type="primary"):
     if not ad_soyad:
         st.error("Lütfen Ad Soyad giriniz.")
     else:
+        # Hesaplama
         bugun = date.today()
         yas_ay_toplam = (bugun.year - dob.year) * 12 + (bugun.month - dob.month)
         if bugun.day < dob.day:
@@ -255,7 +191,7 @@ if st.button("Analiz Et", type="primary"):
         yas_ay_artik = yas_ay_toplam % 12
         spm_puani = puani_donustur(dogru)
 
-        # Session State Kaydı
+        # Sonuçları Session State'e Kaydet (Pop-up yok, sadece analiz)
         st.session_state.analiz_yapildi = True
         st.session_state.kisi_bilgi = {
             "ad": ad_soyad, "dob": dob, "yas_yil": yas_yil, 
@@ -311,18 +247,11 @@ if st.session_state.analiz_yapildi:
         bio = io.BytesIO()
         doc.save(bio)
 
-        # İNDİRME BUTONU (Pop-up'ı tetikler)
+        # İNDİRME BUTONU (Pop-up vb. yok, sadece indirir)
         st.download_button(
             label="📥 Raporu İndir",
             data=bio.getvalue(),
             file_name=f"Raven_Rapor_{bilgi['ad'].replace(' ', '_')}.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            type="primary",
-            on_click=popup_tetikle
+            type="primary"
         )
-
-# Sayfa yenilendiğinde eğer popup_ac True ise Dialog'u göster
-if st.session_state.popup_ac:
-    show_popup_modal()
-
-
