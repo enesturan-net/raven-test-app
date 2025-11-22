@@ -3,8 +3,9 @@ from datetime import date, datetime
 from docx import Document
 from docx.shared import Pt
 import io
+import os
 
-# --- SAYFA AYARLARI ---
+# --- 1. SAYFA AYARLARI (EN BAŞTA OLMALI) ---
 st.set_page_config(
     page_title="Raven Test Analizi", 
     layout="centered", 
@@ -12,7 +13,46 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- SADE TASARIM (MAC & WINDOWS UYUMLU) ---
+# --- 2. HAFIZA (SESSION STATE) TANIMLAMALARI (HATA BURADAYDI, DÜZELTİLDİ) ---
+# Bu kısım, kodun geri kalanı çalışmadan önce değişkenleri oluşturur.
+if 'analiz_yapildi' not in st.session_state:
+    st.session_state['analiz_yapildi'] = False
+if 'sonuclar' not in st.session_state:
+    st.session_state['sonuclar'] = []
+if 'popup_ac' not in st.session_state:
+    st.session_state['popup_ac'] = False
+if 'kisi_bilgi' not in st.session_state:
+    st.session_state['kisi_bilgi'] = {}
+
+# --- 3. POP-UP FONKSİYONLARI ---
+def popup_tetikle():
+    st.session_state['popup_ac'] = True
+
+@st.dialog("⚠️ UYARI")
+def show_popup_modal():
+    # 9.jpeg Gösterimi (Varsa)
+    image_path = "9.jpeg"
+    # Uzantı kontrolü (Büyük/Küçük harf)
+    if not os.path.exists(image_path):
+        for ext in ["jpg", "png", "JPG", "JPEG"]:
+            if os.path.exists(f"9.{ext}"):
+                image_path = f"9.{ext}"
+                break
+    
+    if os.path.exists(image_path):
+        st.image(image_path, use_container_width=True)
+    
+    st.markdown("""
+        <div style="background-color: #fff0f0; padding: 15px; border: 2px solid #FF4B4B; border-radius: 10px; text-align: center; margin-top: 10px;">
+            <h3 style="color: #FF4B4B !important; margin: 0; font-weight: bold;">Mal mal bakma ekrana dosya indi indirilenlere bak</h3>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("Tamam, Kapat"):
+        st.session_state['popup_ac'] = False
+        st.rerun()
+
+# --- 4. TASARIM (CSS) ---
 st.markdown("""
 <style>
     /* Tüm arka planı beyaz yap */
@@ -20,15 +60,15 @@ st.markdown("""
         background-color: #ffffff;
     }
     
-    /* Yazıları kesin siyah yap (Mac'te koyu modda kaybolmaması için) */
+    /* Yazıları kesin siyah yap */
     h1, h2, h3, p, div, span, label, .stMarkdown, .stText {
         color: #262730 !important;
     }
     
-    /* Input kutularını belirginleştir (Gri fon, Siyah yazı) */
+    /* Input kutularını belirginleştir */
     .stTextInput input, .stNumberInput input, .stDateInput input {
         background-color: #f0f2f6 !important;
-        color: #000000 !important;
+        color: #31333F !important;
         border: 1px solid #d6d6d6;
     }
     
@@ -46,18 +86,18 @@ st.markdown("""
         background-color: #ff3333;
     }
     
-    /* Başlık altı boşluk */
+    /* Üst boşluğu azalt */
     .block-container {
         padding-top: 2rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- BAŞLIK ---
+# --- 5. BAŞLIK ---
 st.title("Raven Testi: Otomatik Analiz")
 st.markdown("Aşağıdaki bilgileri doldurarak analiz yapabilir ve raporu indirebilirsiniz.")
 
-# --- MANTIK VE VERİ TABANI ---
+# --- 6. MANTIK VE VERİ TABANI ---
 
 def puani_donustur(p):
     mapping = {
@@ -166,8 +206,6 @@ veritabani = {
     }
 }
 
-# --- ARAYÜZ ---
-
 col1, col2 = st.columns(2)
 with col1:
     ad_soyad = st.text_input("Ad Soyad", placeholder="Örn: Ahmet Yılmaz")
@@ -176,12 +214,10 @@ with col2:
 
 dogru = st.number_input("Test Doğru Sayısı (0-28 Arası)", min_value=0, max_value=28, step=1)
 
-# --- ANALİZ ET BUTONU ---
 if st.button("Analiz Et", type="primary"):
     if not ad_soyad:
         st.error("Lütfen Ad Soyad giriniz.")
     else:
-        # Hesaplama
         bugun = date.today()
         yas_ay_toplam = (bugun.year - dob.year) * 12 + (bugun.month - dob.month)
         if bugun.day < dob.day:
@@ -191,9 +227,8 @@ if st.button("Analiz Et", type="primary"):
         yas_ay_artik = yas_ay_toplam % 12
         spm_puani = puani_donustur(dogru)
 
-        # Sonuçları Session State'e Kaydet (Pop-up yok, sadece analiz)
-        st.session_state.analiz_yapildi = True
-        st.session_state.kisi_bilgi = {
+        st.session_state['analiz_yapildi'] = True
+        st.session_state['kisi_bilgi'] = {
             "ad": ad_soyad, "dob": dob, "yas_yil": yas_yil, 
             "yas_ay": yas_ay_artik, "dogru": dogru, "spm": spm_puani
         }
@@ -217,21 +252,19 @@ if st.button("Analiz Et", type="primary"):
                         break
                 temp_sonuclar.append((ulke_adi, yuzdelik_sonuc))
         
-        st.session_state.sonuclar = temp_sonuclar
+        st.session_state['sonuclar'] = temp_sonuclar
 
-# --- SONUÇLAR VE İNDİRME BUTONU ---
-if st.session_state.analiz_yapildi:
-    bilgi = st.session_state.kisi_bilgi
+if st.session_state['analiz_yapildi']:
+    bilgi = st.session_state['kisi_bilgi']
     st.success(f"Hesaplama Tamamlandı: {bilgi['yas_yil']} Yaş {bilgi['yas_ay']} Ay. SPM Puanı: {bilgi['spm']}")
     
     st.subheader("Ülke Normlarına Göre Analiz")
-    if not st.session_state.sonuclar:
+    if not st.session_state['sonuclar']:
         st.warning("Bu yaş grubu için veri bulunamadı.")
     else:
-        for ulke, yuzdelik in st.session_state.sonuclar:
+        for ulke, yuzdelik in st.session_state['sonuclar']:
             st.write(f"**{ulke}:** {yuzdelik}")
 
-        # Word Dosyasını Hazırla
         doc = Document()
         doc.add_heading('RAVEN TESTİ PERFORMANS RAPORU', 0).alignment = 1
         p = doc.add_paragraph()
@@ -240,18 +273,21 @@ if st.session_state.analiz_yapildi:
         p.add_run(f"Test Tarihi: {date.today().strftime('%d.%m.%Y')}\n")
         p.add_run(f"Test Puanı: Ham: {bilgi['dogru']} / 28  (SPM: {bilgi['spm']})")
         doc.add_heading('Uluslararası Norm Karşılaştırması', level=1)
-        for ulke, yuzdelik in st.session_state.sonuclar:
+        for ulke, yuzdelik in st.session_state['sonuclar']:
             p = doc.add_paragraph(style='List Bullet')
             p.add_run(f"{bilgi['ad']}, {ulke} normlarına göre kendi yaş grubunda {yuzdelik}.")
         
         bio = io.BytesIO()
         doc.save(bio)
 
-        # İNDİRME BUTONU (Pop-up vb. yok, sadece indirir)
         st.download_button(
             label="📥 Raporu İndir",
             data=bio.getvalue(),
             file_name=f"Raven_Rapor_{bilgi['ad'].replace(' ', '_')}.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            type="primary"
+            type="primary",
+            on_click=popup_tetikle
         )
+
+if st.session_state['popup_ac']:
+    show_popup_modal()
