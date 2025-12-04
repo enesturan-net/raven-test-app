@@ -8,7 +8,7 @@ import random
 import os
 
 # --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Raven Test Analizi", layout="centered", page_icon="🧠")
+st.set_page_config(page_title="Çocuk Raven Test Analizi", layout="centered", page_icon="🧠")
 
 # --- HAFIZA AYARLARI ---
 if 'analiz_yapildi' not in st.session_state: st.session_state['analiz_yapildi'] = False
@@ -93,7 +93,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("Raven Testi: Otomatik Analiz")
+st.title("Raven Testi: Otomatik Eşleştirme")
 
 col1, col2 = st.columns(2)
 with col1: ad_soyad = st.text_input("Ad Soyad")
@@ -201,3 +201,4 @@ def show_popup_modal():
     if st.button("Tamam"): st.session_state['popup_ac'] = False; st.rerun()
 
 if st.session_state['popup_ac']: show_popup_modal()
+
